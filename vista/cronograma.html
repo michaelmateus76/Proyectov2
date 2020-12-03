@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" href="css/styleCronograma.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <title>Cronograma</title>
+</head>
+<body>
+<div id="app">
+ <div class="cont">
+  <input class="devolver" v-on:click="cargarActividades" type="submit" id="Consultar" value="Cargar actividades">
+  <br><br><br>
+  <input class="devolver" type="submit" v-on:click="mostrarCronograma" id="Consultar" value="Consultar cronograma">
+ </div>
+
+ <div v-show="mostrar">
+      <form class="form-register">
+          <table id="usuario">
+              <tr>
+                  <th>Nombre de la actividad</th>
+                  <th>Fecha de entrega</th>
+                  <th>Descripción</th>
+                  <th>Nombre de la materia</th>
+                  <th></th>
+              </tr>
+              <tr v-for="acti in actividad">
+                  <td>{{acti.nombre_act}}</td>
+                  <td>{{acti.fecha}}</td>
+                  <td>{{acti.descripcion}}</td>
+                  <td>{{acti.nombre_mat}}</td>
+                  <td><input class="addCro" type="submit" v-on:click="mostrarVentana($event,acti.nombre_act,acti.nombre_mat)" value="Agregar a cronograma"></td>
+              </tr>
+          </table>
+      </form>  
+ </div>
+     <div v-show="mostrar2">
+        <form class="form-register">
+            <input class="controls" name="fecha" id="fecha" placeholder="Ingresa la fecha">
+            <input class="controls" name="hora" id="hora" placeholder="Ingresa la hora">
+            <input class="addCro" type="submit" v-on:click="agregarCronograma" value="Agregar">
+        </form>  
+     </div>
+     <div v-show="mostrar3">
+        <form class="form-register">
+            <input class="controls" name="fecha2" id="fecha2" placeholder="Ingresa la fecha a consultar">
+            <input class="addCro" type="submit" v-on:click="cargarCronograma" value="Cargar">
+        </form>  
+     </div>
+     <div v-show="mostrar4">
+        <form class="form-register">
+            <table id="usuario">
+                <tr>
+                    <th>Nombre de la actividad</th>
+                    <th>Nombre de la materia</th>
+                    <th>Fecha programda</th>
+                    <th>Hora</th>
+                    <th></th>
+                </tr>
+                <tr v-for="cro in cronograma">
+                    <td>{{cro.nombreAct}}</td>
+                    <td>{{cro.nombreMat}}</td>
+                    <td>{{cro.fecha}}</td>
+                    <td>{{cro.hora}}</td>
+                    <td><input class="addCro" type="submit"  v-on:click="deleteCro($event,cro.nombreAct)" value="Eliminar del cronograma"></td>
+                </tr>
+            </table>
+        </form>  
+   </div>
+   <div v-show="mostrar5">
+    <form class="form-register">
+        <h4>¡Realizado con éxito!</h4>
+        <br><br>
+        <input class="addCro" type="submit" v-on:click="mensajeAdd" value="Aceptar"></td>
+    </form>  
+ </div>
+</div>
+    <script>
+     axios.get('http://54.237.31.83:5000/cargarActividad')
+     .then(response => {
+	act = response.data;
+        var app = new Vue({
+            el: '#app',
+            data: {
+                message: '',
+                actividad: [],
+                cronograma: [],
+                mostrar: true,
+                mostrar2: false,
+                mostrar3: false,
+                mostrar4: false,
+                mostrar5: false,
+		        actividades: act,
+                nombreAct: '',
+                nombreMat: ''
+            },
+            methods: {
+                cargarActividades(evt){
+                    evt.preventDefault()
+                    this.actividad = this.actividades,
+                    this.mostrar = true,
+                    this.mostrar2 = false,
+                    this.mostrar3 = false,
+                    this.mostrar5= false,
+                    this.mostrar4 = false
+                },
+                agregarCronograma(evt,hora,fecha){
+                    evt.preventDefault()
+                    this.mostrar = false,
+                    this.mostrar2 = false,
+                    this.mostrar3 = false,
+                    this.mostrar5= true,
+                    this.mostrar4 = false,
+                    info = new FormData(),
+		            info.append('nombreAct',this.nombreAct),
+		            info.append('nombreMat',this.nombreMat),
+		            info.append('hora',document.getElementById("hora").value),
+		            info.append('fecha',document.getElementById("fecha").value),
+                    axios.post('http://54.237.31.83:5000/agregarCronograma', info)
+                    .then(response => {
+                    })
+                    .catch(error => console.error(error)); 
+                },
+                mostrarVentana(evt,nombreAct,nombreMat){
+                    evt.preventDefault()
+                    this.mostrar = false,
+                    this.mostrar2 = true,
+                    this.mostrar3 = false,
+                    this.mostrar4 = false,
+                    this.mostrar5= false,
+                    this.nombreAct = nombreAct,
+                    this.nombreMat = nombreMat
+                },
+                mostrarCronograma(evt){
+                    evt.preventDefault()
+                    this.mostrar = false,
+                    this.mostrar2 = false,
+                    this.mostrar3 = true,
+                    this.mostrar5= false,
+                    this.mostrar4 = false
+                },
+                cargarCronograma(evt){
+                    evt.preventDefault()
+                    this.mostrar = false,
+                    this.mostrar2 = false,
+                    this.mostrar3 = false,
+                    this.mostrar5= false,
+                    this.mostrar4 = true,
+                    info = new FormData(),
+                    info.append('fecha',document.getElementById("fecha2").value),
+                    axios.post('http://54.237.31.83:5000/cargarCronograma', info)
+                    .then(response => {
+                        crono = response.data;
+                        this.cronograma = crono;
+                    })
+                    .catch(error => console.error(error));
+                },
+                mensajeAdd(evt){
+                    evt.preventDefault()
+                    this.mostrar = true,
+                    this.mostrar2 = false,
+                    this.mostrar3 = false,
+                    this.mostrar5= false,
+                    this.mostrar4 = false
+                },
+                deleteCro(evt,key){
+                    evt.preventDefault()
+                    this.mostrar = false,
+                    this.mostrar2 = false,
+                    this.mostrar3 = false,
+                    this.mostrar5= true,
+                    this.mostrar4 = false,
+                    info = new FormData(),
+                    info.append('nombre',key),
+                    axios.post('http://54.237.31.83:5000/deleteCronograma', info)
+                    .then(response => {
+                    })
+                    .catch(error => console.error(error));
+                },
+            },
+        })
+    
+      })
+      .catch(error => console.error(error)); 
+    </script>
+
+
+
+</body>
+</html>
